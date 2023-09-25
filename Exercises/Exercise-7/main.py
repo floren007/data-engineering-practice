@@ -60,7 +60,8 @@ def main():
     # column `model` has a space ... aka ` ` in it, split on that `space`. The value
     # found before the space ` ` will be considered the `brand`. If there is no
     # space to split on, fill in a value called `unknown` for the `brand`.
-
+    new_brannd = df.withColumn("brand",F.split(F.col('model'),' ').getItem(0))
+    new_brannd.select("brand").show()
 
 
     df.show()
