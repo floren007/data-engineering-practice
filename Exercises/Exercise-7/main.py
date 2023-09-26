@@ -3,6 +3,8 @@ import pyspark.sql.functions as F
 from zipfile import ZipFile
 import os
 from pyspark.sql.types import DateType
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
 def main():
     spark = SparkSession.builder.appName("Exercise7").enableHiveSupport().getOrCreate()
     # your code here
@@ -61,12 +63,25 @@ def main():
     # found before the space ` ` will be considered the `brand`. If there is no
     # space to split on, fill in a value called `unknown` for the `brand`.
     new_brannd = df.withColumn("brand",F.split(F.col('model'),' ').getItem(0))
-    new_brannd.select("brand").show()
+    #new_brannd.select("brand").show()
+    
+    # Define a UDF to extract the brand
+    def extract_brand(model):
+        if ' ' in df.select('model'):
+            return model.split(' ')[0]
+        else:
+            return 'unknown'
+    
+    # Register the UDF
+    extract_brand_udf = udf(extract_brand, StringType())
 
+    # Add a new 'brand' column using the UDF
+    df_testing = df.withColumn('brand', extract_brand_udf(df['model']))
+    df_testing.show()
 
-    df.show()
-    df_date.show()
-    df.select(df.source_file).show(truncate=False)
+    # df.show()
+    # df_date.show()
+    # df.select(df.source_file).show(truncate=False)
 
     
 
