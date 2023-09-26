@@ -5,6 +5,7 @@ import os
 from pyspark.sql.types import DateType
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StringType
+from pyspark.sql.window import Window
 def main():
     spark = SparkSession.builder.appName("Exercise7").enableHiveSupport().getOrCreate()
     # your code here
@@ -62,12 +63,10 @@ def main():
     # column `model` has a space ... aka ` ` in it, split on that `space`. The value
     # found before the space ` ` will be considered the `brand`. If there is no
     # space to split on, fill in a value called `unknown` for the `brand`.
-    new_brannd = df.withColumn("brand",F.split(F.col('model'),' ').getItem(0))
-    #new_brannd.select("brand").show()
-    
+   
     # Define a UDF to extract the brand
     def extract_brand(model):
-        if ' ' in df.select('model'):
+        if ' ' in model:
             return model.split(' ')[0]
         else:
             return 'unknown'
@@ -77,15 +76,34 @@ def main():
 
     # Add a new 'brand' column using the UDF
     df_testing = df.withColumn('brand', extract_brand_udf(df['model']))
-    df_testing.show()
+    #df_testing.select('brand').show()
 
-    # df.show()
-    # df_date.show()
-    # df.select(df.source_file).show(truncate=False)
+    # 4. Inspect a column called `capacity_bytes`. Create a secondary DataFrame that
+    # relates `capacity_bytes` to the `model` column, create "buckets" / "rankings" for
+    # those models with the most capacity to the least. Bring back that 
+    # data as a column called `storage_ranking` into the main dataset.
 
-    
+    # Create a secondary DataFrame with model and capacity_bytes
 
+    secondary_df = df.select('model','capacity_bytes')
 
+    # Define a Window specification to rank models by capacity in descending order
+
+    window_spec  = Window.orderBy(F.desc('capacity_bytes'))
+
+    # Add a 'storage_ranking' column to the secondary DataFrame
+
+    secondary_df  = secondary_df.withColumn('storage_ranking',F.rank().over(window_spec ))
+
+    # Join the secondary DataFrame back to the main DataFrame using 'model' as the key
+
+    secondary_df = secondary_df.join(secondary_df, 'model','left')
+    #secondary_df.show()
+
+    # 5. Create a column called `primary_key` that is `hash` of columns that make a record umique
+    #in this dataset.
+    df1 = df.withColumn("primary_key",F.monotonically_increasing_id())
+    df1.select('primary_key').show()
 
 if __name__ == "__main__":
     main()
