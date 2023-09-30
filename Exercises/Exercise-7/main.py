@@ -102,8 +102,10 @@ def main():
 
     # 5. Create a column called `primary_key` that is `hash` of columns that make a record umique
     #in this dataset.
-    df1 = df.withColumn("primary_key",F.monotonically_increasing_id())
-    df1.select('primary_key').show()
+
+    # Create a new 'primary_key' column by hashing the unique columns
+    df5 = df.withColumn('primary_key', F.sha1(F.concat_ws('|',F.monotonically_increasing_id())))
+    df5.select('primary_key').show()
 
 if __name__ == "__main__":
     main()
