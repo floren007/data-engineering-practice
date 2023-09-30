@@ -1,8 +1,7 @@
 # Introduction
 Small exercises that I have been doing to introduce myself to the Data Engineer speciality.
 
-These exercises are uploaded in the repository of Daniel, Senior Data Engineer
-
+These exercises are uploaded in the repository of [Daniel] (https://github.com/danielbeach), Senior Data Engineer
 ## Data Engineering Practice Problems
 
 One of the main obstacles of Data Engineering is the large
